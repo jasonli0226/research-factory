@@ -51,8 +51,8 @@ Run outputs are gitignored.
       so the same family wrote and graded the proposal
 - [x] Retries are told why the previous output failed its check; GLM then fixed `[Qn (Gaps)]` markers
       on the retry in 2 of 2 trials that needed one
-- [ ] Proposal-writer fallback outside the evaluator's model family, or switch the evaluator's family
-      when the writer falls back
+- [x] Evaluator skips models from the writer's family and uses `crossFamily` instead
+      (`orchestrator/src/model-family.ts`); the run fails if no other family is configured
 
 ## Improvements
 

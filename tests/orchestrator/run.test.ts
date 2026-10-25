@@ -9,10 +9,11 @@ import { localDate, runFactory, slugify } from "../../orchestrator/src/run.js";
 import type { QuestionReport } from "../../verifier/src/verify.js";
 
 const stage = { provider: "p", model: "m" };
+const evaluator = { provider: "p", model: "judge/m", crossFamily: { provider: "p", model: "cross/m" } };
 const config = parseConfig({
   stages: {
     planner: stage, researcher: stage, synthesizer: stage, "solution-generator": stage,
-    "red-team": stage, "proposal-writer": stage, evaluator: stage,
+    "red-team": stage, "proposal-writer": stage, evaluator,
   },
   budgets: { maxRevisionRounds: 1, maxRepairRounds: 1, maxParallelResearchers: 2, maxUsdPerRun: 1, stageTimeoutSec: 60 },
   thresholds: { minEvalScore: 0.8, minVerifiedCitationRatio: 1 },
@@ -252,7 +253,10 @@ describe("runFactory", () => {
     });
 
     expect(result.phase).toBe("evaluator-failed");
-    expect(calls.filter((c) => basename(c.skillDir) === "evaluator")).toHaveLength(2);
+    // primary twice, then the cross-family model, which is outside the writer's family too
+    expect(calls.filter((c) => basename(c.skillDir) === "evaluator").map((c) => c.model)).toEqual([
+      "judge/m", "judge/m", "cross/m",
+    ]);
     const manifest = JSON.parse(readFileSync(join(result.runDir, "run.json"), "utf8"));
     expect(manifest.stages.evaluator).toMatchObject({ ok: false, error: "eval.json has no score for C1" });
   });
@@ -289,6 +293,30 @@ describe("runFactory", () => {
     expect(result.phase).toBe("below-threshold");
     const manifest = JSON.parse(readFileSync(join(result.runDir, "run.json"), "utf8"));
     expect(manifest.revisions.rounds).toHaveLength(2);
+  });
+
+  it("evaluates with another family when the writer fell back to the evaluator's family", async () => {
+    const { brief, runsDir } = setup();
+    const writer = { ...stage, fallback: { provider: "p", model: "judge/writer" } };
+    const fallbackConfig = { ...config, stages: { ...config.stages, "proposal-writer": writer } };
+    const { runner: base, calls } = fakeRunner();
+    // The primary writer leaves a bare marker, so the stage falls back to the judge family.
+    const runner = async (inv: PiInvocation) => {
+      const result = await base(inv);
+      if (basename(inv.skillDir) === "proposal-writer" && inv.model === "m") {
+        writeFileSync(join(inv.cwd, "proposal.md"), PROPOSAL.replace("(no published evidence)", "[Q1]"));
+      }
+      return result;
+    };
+    const result = await runFactory({
+      briefPath: brief, runsDir, factoryRoot: "/f", factoryCommit: "c", config: fallbackConfig, rubric: RUBRIC, runner,
+      verifyQuestion: async () => verified, now: new Date(2026, 9, 13, 10),
+    });
+
+    expect(result.phase).toBe("proposal-accepted");
+    const models = (skill: string) => calls.filter((c) => basename(c.skillDir) === skill).map((c) => c.model);
+    expect(models("proposal-writer")).toEqual(["m", "m", "judge/writer"]);
+    expect(models("evaluator")).toEqual(["cross/m"]);
   });
 
   it("skips the synthesizer when every sub-question is excluded", async () => {

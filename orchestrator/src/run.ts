@@ -3,10 +3,11 @@ import { basename, join } from "node:path";
 import type { QuestionReport } from "../../verifier/src/verify.js";
 import { parseBacklogIds } from "./backlog.js";
 import { createCostTracker, type CostTracker } from "./budget.js";
-import type { FactoryConfig } from "./config.js";
+import type { FactoryConfig, StageConfig } from "./config.js";
 import { checkCritique } from "./critique-check.js";
 import { checkEval } from "./eval-check.js";
 import { checkFindingsCitations } from "./findings-check.js";
+import { evaluatorStageFor } from "./model-family.js";
 import { checkOptions } from "./options-check.js";
 import type { PiRunner } from "./pi-runner.js";
 import { mapWithConcurrency } from "./pool.js";
@@ -196,10 +197,11 @@ export async function runFactory(opts: RunOptions): Promise<RunResult> {
     prompt: string,
     validate: () => string | null,
     sessionDir = join(runDir, "sessions"),
+    stage: StageConfig = opts.config.stages[name],
   ) => {
     const result = await runStage({
       name,
-      stage: opts.config.stages[name],
+      stage,
       invocation: {
         cwd: runDir,
         skillDir: skill(name),
@@ -258,14 +260,24 @@ export async function runFactory(opts: RunOptions): Promise<RunResult> {
               "options.md and critique.md in the current directory and revise proposal.md.",
         () => checkProposal(runDir),
       ),
-    evaluate: () =>
-      runWriter(
+    evaluate: async () => {
+      const writerModel = stageLog["proposal-writer"]?.model ?? "";
+      const stage = evaluatorStageFor(opts.config.stages.evaluator, writerModel);
+      if (!stage) {
+        const error = `No evaluator model outside the writer's family (${writerModel})`;
+        stageLog.evaluator = { ok: false, error, attempts: [] };
+        log(`evaluator failed: ${error}`);
+        return false;
+      }
+      return runWriter(
         "evaluator",
         buildEvaluatorPrompt(opts.rubric),
         () => checkEval(runDir, opts.rubric.criteria, opts.rubric.personas.length),
         // The session log holds the rubric, so it stays out of the run directory writers can read.
         join(opts.runsDir, ".evaluator-sessions", basename(runDir)),
-      ),
+        stage,
+      );
+    },
     log,
   });
   const phases = {

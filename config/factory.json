@@ -1,5 +1,5 @@
 {
-  "$comment": "Model per stage (pi --provider/--model), with a fallback used after the primary fails twice. Later: give red-team and evaluator a different model family than proposal-writer.",
+  "$comment": "Model per stage (pi --provider/--model), with a fallback used after the primary fails twice. The evaluator skips any model from the proposal writer's family and uses crossFamily instead. Later: give red-team a different model family than proposal-writer.",
   "stages": {
     "planner": {
       "provider": "openrouter",
@@ -55,6 +55,10 @@
       "fallback": {
         "provider": "openrouter",
         "model": "~deepseek/deepseek-v4-flash-latest"
+      },
+      "crossFamily": {
+        "provider": "openrouter",
+        "model": "~z-ai/glm-flash-latest"
       }
     }
   },
