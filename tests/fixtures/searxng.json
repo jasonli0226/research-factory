@@ -1,0 +1,41 @@
+{
+  "query": "lora vs full fine-tuning llm",
+  "results": [
+    {
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "url": "https://arxiv.org/abs/2106.09685",
+      "content": "We propose Low-Rank Adaptation, or LoRA, which freezes the pre-trained model weights and injects trainable rank decomposition matrices into each layer of the Transformer architecture, greatly reducing the number of trainable parameters for downstream tasks.",
+      "engine": "google cse",
+      "publishedDate": null
+    },
+    {
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+      "url": "https://arxiv.org/abs/2305.14314",
+      "content": "We present QLoRA, an efficient finetuning approach that reduces memory usage enough to finetune a 65B parameter model on a single 48GB GPU while preserving full 16-bit finetuning task performance.",
+      "engine": "google cse",
+      "publishedDate": null
+    },
+    {
+      "title": "LoRA Learns Less and Forgets Less",
+      "url": "https://arxiv.org/abs/2405.09673",
+      "content": "We compare the performance of LoRA and full finetuning on two target domains, programming and mathematics, and find that LoRA substantially underperforms full finetuning in most settings.",
+      "engine": "google cse",
+      "publishedDate": null
+    },
+    {
+      "title": "No url result",
+      "content": "x",
+      "engine": "bing"
+    }
+  ],
+  "unresponsive_engines": [
+    [
+      "brave",
+      "too many requests"
+    ],
+    [
+      "duckduckgo",
+      "timeout"
+    ]
+  ]
+}

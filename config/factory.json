@@ -1,0 +1,72 @@
+{
+  "$comment": "Model per stage (pi --provider/--model), with a fallback used after the primary fails twice. Later: give red-team and evaluator a different model family than proposal-writer.",
+  "stages": {
+    "planner": {
+      "provider": "openrouter",
+      "model": "~z-ai/glm-flash-latest",
+      "fallback": {
+        "provider": "openrouter",
+        "model": "~deepseek/deepseek-flash-latest"
+      }
+    },
+    "researcher": {
+      "provider": "openrouter",
+      "model": "~z-ai/glm-flash-latest",
+      "fallback": {
+        "provider": "openrouter",
+        "model": "~deepseek/deepseek-flash-latest"
+      }
+    },
+    "synthesizer": {
+      "provider": "openrouter",
+      "model": "~z-ai/glm-flash-latest",
+      "fallback": {
+        "provider": "openrouter",
+        "model": "~deepseek/deepseek-flash-latest"
+      }
+    },
+    "solution-generator": {
+      "provider": "openrouter",
+      "model": "~z-ai/glm-flash-latest",
+      "fallback": {
+        "provider": "openrouter",
+        "model": "~deepseek/deepseek-flash-latest"
+      }
+    },
+    "red-team": {
+      "provider": "openrouter",
+      "model": "~deepseek/deepseek-flash-latest",
+      "fallback": {
+        "provider": "openrouter",
+        "model": "~deepseek/deepseek-v4-flash-latest"
+      }
+    },
+    "proposal-writer": {
+      "provider": "openrouter",
+      "model": "~z-ai/glm-flash-latest",
+      "fallback": {
+        "provider": "openrouter",
+        "model": "~deepseek/deepseek-flash-latest"
+      }
+    },
+    "evaluator": {
+      "provider": "openrouter",
+      "model": "~deepseek/deepseek-flash-latest",
+      "fallback": {
+        "provider": "openrouter",
+        "model": "~deepseek/deepseek-v4-flash-latest"
+      }
+    }
+  },
+  "budgets": {
+    "maxRevisionRounds": 3,
+    "maxRepairRounds": 2,
+    "maxParallelResearchers": 4,
+    "maxUsdPerRun": 2,
+    "stageTimeoutSec": 900
+  },
+  "thresholds": {
+    "minEvalScore": 0.8,
+    "minVerifiedCitationRatio": 1
+  }
+}

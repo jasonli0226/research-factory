@@ -1,0 +1,12 @@
+# Local-only SearXNG for the research factory. Bound to 127.0.0.1 in docker-compose.yml.
+use_default_settings: true
+
+server:
+  limiter: false
+  image_proxy: false
+
+search:
+  safe_search: 0
+  formats:
+    - html
+    - json
